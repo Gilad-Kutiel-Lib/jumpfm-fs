@@ -15,7 +15,7 @@ class FileSystem {
 
     constructor(jumpFm: JumpFm, panel: Panel) {
         this.jumpFm = jumpFm
-        this.maxFiles = jumpFm.settings.getNum('maxFiles', 100)
+        this.maxFiles = jumpFm.settings.getNum('maxFiles', 1000)
         this.panel = panel
         panel.listen(this)
     }
