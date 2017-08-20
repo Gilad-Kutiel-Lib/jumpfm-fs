@@ -1,6 +1,5 @@
 import { JumpFm, Panel } from 'jumpfm-api'
 
-
 import * as fs from 'fs-extra';
 import * as watch from 'node-watch';
 import * as path from 'path';
@@ -10,9 +9,13 @@ var showHiddenFiles = false
 
 class FileSystem {
     watcher = { close: () => { } }
+    readonly maxFiles: number;
     readonly panel: Panel
+    readonly jumpFm: JumpFm
 
-    constructor(panel: Panel) {
+    constructor(jumpFm: JumpFm, panel: Panel) {
+        this.jumpFm = jumpFm
+        this.maxFiles = jumpFm.settings.getNum('maxFiles', 500)
         this.panel = panel
         panel.listen(this)
     }
@@ -25,21 +28,34 @@ class FileSystem {
         this.watcher = watch(url.path, { recursive: false }, this.ll)
     }
 
+    readDirAndSlice = (fullPath: string, cb: (files: string[]) => void): void => {
+        const items: string[] = fs.readdir(fullPath, (err, items) => {
+            if (items.length <= this.maxFiles) return cb(items)
+            this.jumpFm.statusBar.warn('fs', {
+                txt: 'fs warn',
+                dataTitle: `Showing only ${this.maxFiles} files out of ${items.length}`
+            }, 15000)
+            cb(items.slice(0, this.maxFiles))
+        })
+    }
+
     ll = () => {
         const fullPath = this.panel.getPath()
-        this.panel.setItems(
-            fs.readdirSync(fullPath)
-                .filter(name => showHiddenFiles || name.indexOf('.') != 0)
-                .map(name => path.join(fullPath, name))
-                .filter(fullPath => fs.existsSync(fullPath))
-                .map(fullPath => this.panel.itemFromPath(fullPath))
-        )
+        this.readDirAndSlice(fullPath, (files) => {
+            this.panel.setItems(
+                files
+                    .filter(name => showHiddenFiles || name.indexOf('.') != 0)
+                    .map(name => path.join(fullPath, name))
+                    .filter(fullPath => fs.existsSync(fullPath))
+                    .map(fullPath => this.panel.itemFromPath(fullPath))
+            )
+        })
     }
 }
 
 export const load = (jumpFm: JumpFm) => {
     const panels = jumpFm.panels
-    const fss: FileSystem[] = panels.map(panel => new FileSystem(panel))
+    const fss: FileSystem[] = panels.map(panel => new FileSystem(jumpFm, panel))
 
     const msg = () => {
         jumpFm.statusBar.msg(showHiddenFiles ? ['info'] : ['info', 'del'])
