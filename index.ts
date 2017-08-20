@@ -1,8 +1,8 @@
 import { JumpFm, Panel } from 'jumpfm-api'
 
-import * as fs from 'fs-extra';
-import * as watch from 'node-watch';
-import * as path from 'path';
+import * as fs from 'fs-extra'
+import * as watch from 'node-watch'
+import * as path from 'path'
 
 
 var showHiddenFiles = false
@@ -15,7 +15,7 @@ class FileSystem {
 
     constructor(jumpFm: JumpFm, panel: Panel) {
         this.jumpFm = jumpFm
-        this.maxFiles = jumpFm.settings.getNum('maxFiles', 500)
+        this.maxFiles = jumpFm.settings.getNum('maxFiles', 100)
         this.panel = panel
         panel.listen(this)
     }
@@ -29,7 +29,8 @@ class FileSystem {
     }
 
     readDirAndSlice = (fullPath: string, cb: (files: string[]) => void): void => {
-        const items: string[] = fs.readdir(fullPath, (err, items) => {
+        fs.readdir(fullPath, (err, items) => {
+            console.log('items')
             if (items.length <= this.maxFiles) return cb(items)
             this.jumpFm.statusBar.warn('fs', {
                 txt: 'fs warn',
