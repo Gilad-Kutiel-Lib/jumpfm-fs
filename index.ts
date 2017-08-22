@@ -19,17 +19,24 @@ class FileSystem {
     }
 
     onPanelCd = () => {
-        const url = this.panel.getUrl()
         this.watcher.close()
+        const url = this.panel.getUrl()
+
         if (url.protocol) return
+
         this.ll()
-        this.watcher = watch(url.path, { recursive: false }, this.ll)
+        setImmediate(() => {
+            let to
+            this.watcher = watch(url.path, { recursive: false }, () => {
+                clearTimeout(to)
+                to = setTimeout(this.ll)
+            })
+        })
     }
 
     ll = () => {
         const fullPath = this.panel.getPath()
         fs.readdir(fullPath, (err, files) => {
-            console.log('items')
             this.panel.setItems(
                 files
                     .filter(name => showHiddenFiles || name.indexOf('.') != 0)
