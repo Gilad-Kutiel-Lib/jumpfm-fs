@@ -53,11 +53,11 @@ export const load = (jumpFm: JumpFm) => {
     const fss: FileSystem[] = panels.map(panel => new FileSystem(jumpFm, panel))
 
     const msg = () => {
-        jumpFm.statusBar.msg(showHiddenFiles ? ['info'] : ['info', 'del'])
-            ('hidden', {
-                txt: '.h',
-                dataTitle: `${showHiddenFiles ? 'Showing' : 'Hiding'} dot files`
-            })
+        // jumpFm.statusBar.msg(showHiddenFiles ? ['info'] : ['info', 'del'])
+        //     ('hidden', {
+        //         txt: '.h',
+        //         dataTitle: `${showHiddenFiles ? 'Showing' : 'Hiding'} dot files`
+        //     })
     }
 
     // jumpFm.bindKeys('toggleHiddenFiles', ['h'], () => {
