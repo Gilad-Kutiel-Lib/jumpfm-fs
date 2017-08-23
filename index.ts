@@ -5,7 +5,6 @@ import * as watch from 'node-watch'
 import * as path from 'path'
 
 
-var showHiddenFiles = false
 
 class FileSystem {
     watcher = { close: () => { } }
@@ -15,7 +14,7 @@ class FileSystem {
     constructor(jumpFm: JumpFm, panel: Panel) {
         this.jumpFm = jumpFm
         this.panel = panel
-        panel.listen(this)
+        panel.onCd(this.onPanelCd)
     }
 
     onPanelCd = () => {
@@ -35,11 +34,10 @@ class FileSystem {
     }
 
     ll = () => {
-        const fullPath = this.panel.getPath()
+        const fullPath = this.panel.getUrl().path
         fs.readdir(fullPath, (err, files) => {
             this.panel.setItems(
                 files
-                    .filter(name => showHiddenFiles || name.indexOf('.') != 0)
                     .map(name => ({
                         name: name
                         , path: path.join(fullPath, name)
@@ -55,10 +53,24 @@ class FileSystem {
     }
 }
 
+let showHiddenFiles = false
+
+const filterHidden = (item) => item.name.indexOf('.') != 0
+
 export const load = (jumpFm: JumpFm) => {
     const panels = jumpFm.panels
     const fss: FileSystem[] = panels.map(panel => new FileSystem(jumpFm, panel))
 
+    panels.forEach(panel => panel.filterSet('hidden', filterHidden))
+
+    jumpFm.bind('toggleHiddenFiles', ['h'], () => {
+        showHiddenFiles = !showHiddenFiles
+        panels.forEach(panel => {
+            if (showHiddenFiles) panel.filterRemove('hidden')
+            else panel.filterSet('hidden', filterHidden)
+        })
+    })
+    // msg()
     const msg = () => {
         // jumpFm.statusBar.msg(showHiddenFiles ? ['info'] : ['info', 'del'])
         //     ('hidden', {
@@ -67,10 +79,4 @@ export const load = (jumpFm: JumpFm) => {
         //     })
     }
 
-    // jumpFm.bindKeys('toggleHiddenFiles', ['h'], () => {
-    //     showHiddenFiles = !showHiddenFiles
-    //     fss.forEach(fs => fs.ll())
-    //     msg()
-    // }).filterMode([])
-    // msg()
 }
