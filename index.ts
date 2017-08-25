@@ -7,7 +7,6 @@ import * as path from 'path'
 
 
 class FileSystem {
-    watcher = { close: () => { } }
     readonly panel: Panel
     readonly jumpFm: JumpFm
 
@@ -18,19 +17,13 @@ class FileSystem {
     }
 
     onPanelCd = () => {
-        this.watcher.close()
+        this.jumpFm.watchStop('fs')
         const url = this.panel.getUrl()
 
         if (url.protocol) return
 
         this.ll()
-        setImmediate(() => {
-            let to
-            this.watcher = watch(url.path, { recursive: false }, () => {
-                clearTimeout(to)
-                to = setTimeout(this.ll)
-            })
-        })
+        this.jumpFm.watchStart('fs', url.path, this.ll)
     }
 
     ll = () => {
