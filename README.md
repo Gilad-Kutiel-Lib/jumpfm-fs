@@ -1,1 +1,1 @@
-A JumpFm core plugin that list files.
+A [JumpFm](](http://jumpfm.org/)) core plugin that list files.
