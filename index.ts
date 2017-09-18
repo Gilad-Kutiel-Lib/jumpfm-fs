@@ -6,41 +6,6 @@ import * as path from 'path'
 
 
 
-class FileSystem {
-    readonly panel: Panel
-    readonly jumpFm: JumpFm
-
-    constructor(jumpFm: JumpFm, panel: Panel) {
-        this.jumpFm = jumpFm
-        this.panel = panel
-        panel.onCd(this.onPanelCd)
-    }
-
-    onPanelCd = () => {
-        this.jumpFm.watchStop('fs')
-        const url = this.panel.getUrl()
-
-        if (url.protocol) return
-
-        this.ll()
-        this.jumpFm.watchStart('fs', url.path, this.ll)
-    }
-
-    ll = () => {
-        const fullPath = this.panel.getUrl().path
-        fs.readdir(fullPath, (err, files) => {
-            this.panel.setItems(
-                files
-                    .map(name => ({
-                        name: name
-                        , path: path.join(fullPath, name)
-                    }))
-                    .filter(item => fs.existsSync(item.path))
-            )
-        })
-    }
-}
-
 let showHiddenFiles = false
 
 const filterHidden = (item) => item.name.indexOf('.') != 0
@@ -56,27 +21,58 @@ export const load = (jumpFm: JumpFm) => {
             )
     }
 
-    const panels = jumpFm.panels
-    const fss: FileSystem[] = panels.map(panel => new FileSystem(jumpFm, panel))
+    jumpFm.panels.forEach((panel, i) => {
+        const ll = () => {
+            const fullPath = panel.getUrl().path
+            fs.readdir(fullPath, (err, files) => {
+                panel.setItems(
+                    files
+                        .map(name => ({
+                            name: name
+                            , path: path.join(fullPath, name)
+                        }))
+                        .filter(item => fs.existsSync(item.path))
+                        .map(item => ({
+                            name: item.name
+                            , path: item.path
+                            , isDirectory: () => fs.statSync(item.path).isDirectory()
+                            , open: () => jumpFm.electron.shell.openItem(item.path)
+                        }))
+                )
+            })
+        }
 
-    const onItemsAdded = (items: Item[]) => {
-        items.forEach(item => {
-            fs.stat(item.path, (err, stat) => {
-                item.setTime(stat.mtime.getTime())
-                item.setSize(stat.size)
+        panel.filterSet('hidden', filterHidden)
+
+        panel.onItemsAdded((items: Item[]) => {
+            if (panel.getUrl().protocol) return
+            items.forEach(item => {
+                fs.stat(item.path, (err, stat) => {
+                    item.setTime(stat.mtime.getTime())
+                    item.setSize(stat.size)
+                })
             })
         })
-    }
 
-    panels.forEach(panel => {
-        panel.filterSet('hidden', filterHidden)
-        panel.onItemsAdded(onItemsAdded)
+        panel.onCd(() => {
+            console.log('stopping')
+            jumpFm.watchStop('fs' + i)
+            const url = panel.getUrl()
+
+            if (url.protocol) return
+
+            ll()
+            jumpFm.watchStart('fs' + i, url.path, () => {
+                console.log('WATCH TRIGGER', i)
+                ll()
+            })
+        })
     })
 
     jumpFm.bind('toggleHiddenFiles', ['h'], () => {
         showHiddenFiles = !showHiddenFiles
         updateStatus()
-        panels.forEach(panel => {
+        jumpFm.panels.forEach(panel => {
             if (showHiddenFiles) panel.filterRemove('hidden')
             else panel.filterSet('hidden', filterHidden)
         })

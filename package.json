@@ -1,29 +1,29 @@
 {
-  "name": "jumpfm-fs",
-  "version": "1.1.0",
-  "description": "A [JumpFm](](http://jumpfm.org/)) core plugin that list files.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "fs-extra": "^4.0.1",
-    "node-watch": "^0.5.5",
-    "path": "^0.12.7"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^4.0.0",
-    "jumpfm-api": "^1.0.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/JumpFm/jumpfm-fs.git"
-  },
-  "keywords": [],
-  "bugs": {
-    "url": "https://github.com/JumpFm/jumpfm-fs/issues"
-  },
-  "homepage": "https://github.com/JumpFm/jumpfm-fs#readme"
+    "name": "jumpfm-fs",
+    "version": "1.1.1",
+    "description": "A [JumpFm](http://jumpfm.org/) core plugin that list files.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "fs-extra": "^4.0.1",
+        "node-watch": "^0.5.5",
+        "path": "^0.12.7"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^4.0.0",
+        "jumpfm-api": "latest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JumpFm/jumpfm-fs.git"
+    },
+    "keywords": [],
+    "bugs": {
+        "url": "https://github.com/JumpFm/jumpfm-fs/issues"
+    },
+    "homepage": "https://github.com/JumpFm/jumpfm-fs#readme"
 }
